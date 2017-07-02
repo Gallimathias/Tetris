@@ -1,6 +1,6 @@
 ﻿namespace Tetris
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Erforderliche Designervariable.
@@ -28,12 +28,34 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.view1 = new Tetris.View();
+            this.SuspendLayout();
+            // 
+            // view1
+            // 
+            this.view1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.view1.Location = new System.Drawing.Point(0, 0);
+            this.view1.Name = "view1";
+            this.view1.Size = new System.Drawing.Size(362, 523);
+            this.view1.TabIndex = 0;
+            // 
+            // MainForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(362, 523);
+            this.Controls.Add(this.view1);
+            this.MaximumSize = new System.Drawing.Size(380, 570);
+            this.MinimumSize = new System.Drawing.Size(380, 570);
+            this.Name = "MainForm";
+            this.Text = "Tetris";
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+
+        private View view1;
     }
 }
 
