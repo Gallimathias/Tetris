@@ -28,23 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.view1 = new Tetris.View();
+            this.View = new Tetris.View();
             this.SuspendLayout();
             // 
-            // view1
+            // View
             // 
-            this.view1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.view1.Location = new System.Drawing.Point(0, 0);
-            this.view1.Name = "view1";
-            this.view1.Size = new System.Drawing.Size(362, 523);
-            this.view1.TabIndex = 0;
+            this.View.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.View.Location = new System.Drawing.Point(0, 0);
+            this.View.Name = "View";
+            this.View.Size = new System.Drawing.Size(362, 523);
+            this.View.TabIndex = 0;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(362, 523);
-            this.Controls.Add(this.view1);
+            this.Controls.Add(this.View);
             this.MaximumSize = new System.Drawing.Size(380, 570);
             this.MinimumSize = new System.Drawing.Size(380, 570);
             this.Name = "MainForm";
@@ -55,7 +55,7 @@
 
         #endregion
 
-        private View view1;
+        private View View;
     }
 }
 

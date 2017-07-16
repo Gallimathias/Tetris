@@ -24,6 +24,11 @@ namespace Tetris.Core
             X = x;
             Y = y;
         }
+        public void SetRelativePosition(int x, int y)
+        {
+            X += x;
+            Y += y;
+        }
         public void Rotate() { }
 
         public void Draw(Graphics graphics, int cellWidth, int cellHeight)

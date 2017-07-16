@@ -31,11 +31,15 @@ namespace Tetris
             };
 
             InitializeComponent();
-
+            
             timer = new Timer()
             {
                 Interval = 16
             };
+
+            PreviewKeyDown += (s, e) => e.IsInputKey = true;
+            KeyDown += (s, e) => game.MoveBrick(e, true);
+            KeyUp += (s, e) => game.MoveBrick(e, false);
 
             timer.Tick += (s, e) => Invalidate();
             timer.Start();
@@ -71,5 +75,6 @@ namespace Tetris
 
             base.OnPaint(e);
         }
+
     }
 }
