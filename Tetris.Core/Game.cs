@@ -20,6 +20,7 @@ namespace Tetris.Core
         public int CellHeight { get; set; }
         public BaseFigure CurrentFigure { get; set; }
         public List<BaseFigure> AllFigures { get; set; }
+        public List<Type> BlockTypes { get; set; }
 
         /// <summary>
         /// Used for Input. Check if Key is pressed
@@ -27,10 +28,11 @@ namespace Tetris.Core
         Dictionary<Keys, KeyValuePair<bool, sbyte>> KeyDictionary;
 
         System.Timers.Timer timer;
-        Stab stab;
+        BaseFigure stab;
         Border bottom;
         Border left;
         Border right;
+        Random random;
 
         ulong frames = 0;
 
@@ -47,12 +49,14 @@ namespace Tetris.Core
                 [Keys.Up] = new KeyValuePair<bool, sbyte>(false, 0)
             };
 
-            stab = new Stab();
+            stab = new Tee();
             CurrentFigure = stab;
             left = new Border(-1, 0, 1, Height);
             right = new Border(Width, 0, 1, Height);
             bottom = new Border(0, Height, Width, 1);
             AllFigures = new List<BaseFigure> { stab, bottom, left, right };
+            BlockTypes = new List<Type> {typeof(Square), typeof(Stab), typeof(Tee) };
+            random = new Random();
 
             timer = new System.Timers.Timer()
             {
@@ -68,58 +72,37 @@ namespace Tetris.Core
         {
             frames++;
 
-            //KeyDictionary.Where(
-            //    x => x.Key == Keys.Right || x.Key == Keys.Left).Where(
-            //    x => x.Value.Key).Select(
-            //    x => x.Value.Value).ToList().ForEach(
-            //    x => CurrentFigure.SetRelativePosition(
-            //        x > 0 ?
-            //        CurrentFigure.Intersect(right) ? 0 : 1 :// stab.X + stab.Width + 1 > Width ? 0 : x :
-            //        CurrentFigure.Intersect(left) ? 0 : -1, 0));
-
-            if (KeyDictionary[Keys.Down].Key)
-                if (!CurrentFigure.Intersect(bottom))
-                    CurrentFigure.SetRelativePosition(0, 1);
-
             if (frames % 4 == 0)
             {
                 if (KeyDictionary[Keys.Up].Key)
                 {
                     KeyDictionary[Keys.Up] = new KeyValuePair<bool, sbyte>(false, 0);
-                    CurrentFigure.Rotate();
+                    TryRotate(CurrentFigure);
                 }
             }
 
-            if (frames % 10 == 0)
-                CurrentFigure.SetRelativePosition(0, 1);
+            KeyDictionary.Where(
+               x => x.Key == Keys.Right || x.Key == Keys.Left).Where(
+               x => x.Value.Key).Select(
+               x => x.Value.Value).ToList().ForEach(
+               x => TryMove(
+               x < 0 ? -1 : 1, 0, CurrentFigure));
 
-            bool intersect = false;
-            foreach (var item in AllFigures.Where(x => x != CurrentFigure))
-            {
-                if (intersect)
-                    continue;
-                intersect = CurrentFigure.Intersect(item);
-            }
-            if(!intersect)
-                KeyDictionary.Where(
-                   x => x.Key == Keys.Right || x.Key == Keys.Left).Where(
-                   x => x.Value.Key).Select(
-                   x => x.Value.Value).ToList().ForEach(
-                   x => CurrentFigure.SetRelativePosition(
-                   x > 0 ? intersect ? -1 : 1 : intersect ? 1 : -1, 0));
-
-            while (CurrentFigure.Intersect(bottom))
-            {
-                CurrentFigure.SetRelativePosition(0, -1);
-                CurrentFigure.IsActive = false;
-                CurrentFigure = new Stab();
-                AllFigures.Add(CurrentFigure);
-            }
+            if (KeyDictionary[Keys.Down].Key || frames % 10 == 0)
+                if (!TryMove(0, 1, CurrentFigure))
+                {
+                    CurrentFigure.IsActive = false;
+                    CurrentFigure = (BaseFigure)Activator.CreateInstance(BlockTypes[random.Next(0, BlockTypes.Count)]);
+                    if(Collision(CurrentFigure))
+                        AllFigures.RemoveAll(x=> !(x is Border));
+                    AllFigures.Add(CurrentFigure);
+                }
         }
 
         public void OnDraw(Graphics graphics)
         {
-            AllFigures.ForEach(f => {
+            AllFigures.ForEach(f =>
+            {
                 if (!(f is Border))
                     f.Draw(graphics, CellWidth, CellHeight);
             });
@@ -131,6 +114,30 @@ namespace Tetris.Core
                 return;
             if (KeyDictionary.TryGetValue(keyEventArgs.KeyCode, out var val))
                 KeyDictionary[keyEventArgs.KeyCode] = new KeyValuePair<bool, sbyte>(keyUp, val.Value);
+        }
+
+        public bool Collision(BaseFigure figure) => AllFigures.Where(f => f != CurrentFigure).Any(b => CurrentFigure.Intersect(b));
+
+        public bool TryMove(int x, int y, BaseFigure figure)
+        {
+            figure.Move(x, y);
+
+            if (!Collision(figure))
+                return true;
+
+            figure.Move(-x, -y);
+            return false;
+        }
+
+        public bool TryRotate(BaseFigure figure)
+        {
+            figure.Rotate();
+
+            if (!Collision(figure))
+                return true;
+
+            figure.CounterRotate();
+            return false;
         }
     }
 }

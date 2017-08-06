@@ -46,6 +46,8 @@
     <Compile Include="Brick.cs" />
     <Compile Include="Figures\BaseFigure.cs" />
     <Compile Include="Figures\Border.cs" />
+    <Compile Include="Figures\Square.cs" />
+    <Compile Include="Figures\Tee.cs" />
     <Compile Include="Figures\Stab.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -38,5 +38,7 @@ namespace Tetris.Core
         }
 
         public bool Intersect(int x, int y) => x == X && y == Y;
+
+        public override string ToString() => $"X:{X} | Y:{Y}";
     }
 }

@@ -38,5 +38,7 @@ namespace Tetris.Core.Figures
                 }
             }
         }
+        public override void CounterRotate() => Rotate();
+        
     }
 }

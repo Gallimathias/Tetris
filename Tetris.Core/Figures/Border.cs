@@ -20,6 +20,9 @@ namespace Tetris.Core.Figures
         public override void Rotate()
         {
         }
+
+        public override void CounterRotate() => Rotate();
+
         public new void Draw(Graphics graphics, int cellWidth, int cellHeight)
         {
 
