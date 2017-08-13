@@ -46,9 +46,13 @@
     <Compile Include="Brick.cs" />
     <Compile Include="Figures\BaseFigure.cs" />
     <Compile Include="Figures\Border.cs" />
+    <Compile Include="Figures\JShape.cs" />
+    <Compile Include="Figures\LShape.cs" />
     <Compile Include="Figures\Square.cs" />
+    <Compile Include="Figures\SShape.cs" />
     <Compile Include="Figures\Tee.cs" />
     <Compile Include="Figures\Stab.cs" />
+    <Compile Include="Figures\ZShape.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

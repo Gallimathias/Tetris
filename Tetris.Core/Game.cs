@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Timers;
 using System.Windows.Forms;
@@ -11,8 +13,8 @@ using Tetris.Core.Figures;
 
 namespace Tetris.Core
 {
-    public class Game
-    {
+    public class Game : INotifyPropertyChanged
+    {        
         public int Width { get; private set; }
         public int Height { get; private set; }
 
@@ -21,6 +23,17 @@ namespace Tetris.Core
         public BaseFigure CurrentFigure { get; set; }
         public List<BaseFigure> AllFigures { get; set; }
         public List<Type> BlockTypes { get; set; }
+        public int Score
+        {
+            get => score;
+            set
+            {
+                score = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event EventHandler OnGameOver;
 
         /// <summary>
         /// Used for Input. Check if Key is pressed
@@ -28,13 +41,18 @@ namespace Tetris.Core
         Dictionary<Keys, KeyValuePair<bool, sbyte>> KeyDictionary;
 
         System.Timers.Timer timer;
-        BaseFigure stab;
         Border bottom;
         Border left;
         Border right;
         Random random;
 
+         int score;
+
         ulong frames = 0;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+      
 
         public Game(int width, int height)
         {
@@ -49,14 +67,13 @@ namespace Tetris.Core
                 [Keys.Up] = new KeyValuePair<bool, sbyte>(false, 0)
             };
 
-            stab = new Tee();
-            CurrentFigure = stab;
             left = new Border(-1, 0, 1, Height);
             right = new Border(Width, 0, 1, Height);
             bottom = new Border(0, Height, Width, 1);
-            AllFigures = new List<BaseFigure> { stab, bottom, left, right };
-            BlockTypes = new List<Type> {typeof(Square), typeof(Stab), typeof(Tee) };
+            AllFigures = new List<BaseFigure> { bottom, left, right };
+            BlockTypes = new List<Type> { typeof(Square), typeof(Stab), typeof(Tee), typeof(LShape), typeof(JShape), typeof(SShape), typeof(ZShape) };
             random = new Random();
+            NewFigure();
 
             timer = new System.Timers.Timer()
             {
@@ -71,7 +88,6 @@ namespace Tetris.Core
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             frames++;
-
             if (frames % 4 == 0)
             {
                 if (KeyDictionary[Keys.Up].Key)
@@ -91,17 +107,67 @@ namespace Tetris.Core
             if (KeyDictionary[Keys.Down].Key || frames % 10 == 0)
                 if (!TryMove(0, 1, CurrentFigure))
                 {
-                    CurrentFigure.IsActive = false;
-                    CurrentFigure = (BaseFigure)Activator.CreateInstance(BlockTypes[random.Next(0, BlockTypes.Count)]);
-                    if(Collision(CurrentFigure))
-                        AllFigures.RemoveAll(x=> !(x is Border));
-                    AllFigures.Add(CurrentFigure);
+                    NewFigure();
                 }
+
+            DeleteLine();
+        }
+
+        private void NewFigure()
+        {
+            if (CurrentFigure != null)
+                CurrentFigure.IsActive = false;
+
+            CurrentFigure = (BaseFigure)Activator.CreateInstance(BlockTypes[random.Next(0, BlockTypes.Count)]);
+
+            if (Collision(CurrentFigure))
+            {
+                timer.Stop();
+                OnGameOver?.Invoke(this, new EventArgs());
+            }
+
+            AllFigures.Add(CurrentFigure);
+        }
+        public void Start()
+        {
+            AllFigures.RemoveAll(x => !(x is Border));
+            timer.Start();
+            Score = 0;
+            KeyDictionary = new Dictionary<Keys, KeyValuePair<bool, sbyte>>()
+            {
+                [Keys.Down] = new KeyValuePair<bool, sbyte>(false, 0),
+                [Keys.Left] = new KeyValuePair<bool, sbyte>(false, -1),
+                [Keys.Right] = new KeyValuePair<bool, sbyte>(false, 1),
+                [Keys.Up] = new KeyValuePair<bool, sbyte>(false, 0)
+            };
+        }
+
+        private void DeleteLine()
+        {
+            var temp = AllFigures
+              .Where(x => !x.IsActive && !(x is Border)).ToList();
+
+            var lines = temp
+                .SelectMany(x => x.BrickPositions)
+                .GroupBy(x => x.Y)
+                .Where(x => x.Count() == Width)
+                .ToList();
+
+            foreach (var line in lines)
+            {
+                Score += 100;
+                foreach (var lineBrick in line)
+                {
+                    temp.ForEach(x => x.DeleteBrickAtPosition(lineBrick));
+
+                }
+                temp.ForEach(x => x.MoveBricksAboveY(line.First().Y));
+            }
         }
 
         public void OnDraw(Graphics graphics)
         {
-            AllFigures.ForEach(f =>
+            AllFigures.ToList().ForEach(f =>
             {
                 if (!(f is Border))
                     f.Draw(graphics, CellWidth, CellHeight);
@@ -138,6 +204,15 @@ namespace Tetris.Core
 
             figure.CounterRotate();
             return false;
+        }
+
+        protected void OnPropertyChanged([CallerMemberName]string propName = null)
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(propName));
+        }
+        protected void OnPropertyChanged(PropertyChangedEventArgs prop)
+        {
+            PropertyChanged?.Invoke(this, prop);
         }
     }
 }

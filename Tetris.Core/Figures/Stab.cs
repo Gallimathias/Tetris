@@ -19,26 +19,6 @@ namespace Tetris.Core.Figures
             }
         }
 
-        public override void Rotate()
-        {
-            if(Bricks.GroupBy(x=>x.Y).ToList().Count > 1)
-            {
-                for (int i = -1; i < 3; i++)
-                {
-                    Bricks[i+1].Y = RotationBrick.Y;
-                    Bricks[i+1].X = RotationBrick.X + i;
-                }
-            }
-            else
-            {
-                for (int i = -1; i < 3; i++)
-                {
-                    Bricks[i + 1].Y = RotationBrick.Y + i;
-                    Bricks[i + 1].X = RotationBrick.X;
-                }
-            }
-        }
-        public override void CounterRotate() => Rotate();
-        
+      
     }
 }

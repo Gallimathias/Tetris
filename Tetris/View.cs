@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tetris.Core;
+using System.Runtime.CompilerServices;
 
 namespace Tetris
 {
-    public partial class View : UserControl
+    public partial class View : UserControl, INotifyPropertyChanged
     {
         public int CellCountX => 10;
         public int CellCountY => 20;
@@ -19,9 +20,27 @@ namespace Tetris
         public int CellWidth => Width / CellCountX;
         public int CellHeight => Height / CellCountY;
 
+        public int Score => game.Score;
+        
         Timer timer;
         Game game;
+        
+        public event PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler OnGameOver;
 
+        protected void OnPropertyChanged([CallerMemberName]string propName=null)
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(propName));
+        }
+        protected void OnPropertyChanged(PropertyChangedEventArgs prop)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new MethodInvoker(() => OnPropertyChanged(prop)));
+                return;
+            }
+            PropertyChanged?.Invoke(this, prop);
+        }
         public View()
         {
             game = new Game(10, 20)
@@ -29,9 +48,15 @@ namespace Tetris
                 CellHeight = CellHeight,
                 CellWidth = CellWidth
             };
+            game.PropertyChanged += (s, e) =>
+            {
+                OnPropertyChanged(e.PropertyName);
+            };
 
             InitializeComponent();
-            
+
+            game.OnGameOver += Game_OnGameOver;
+
             timer = new Timer()
             {
                 Interval = 16
@@ -42,7 +67,14 @@ namespace Tetris
             KeyUp += (s, e) => game.MoveBrick(e, false);
 
             timer.Tick += (s, e) => Invalidate();
+
             timer.Start();
+        }
+
+        private void Game_OnGameOver(object sender, EventArgs e)
+        {
+            MessageBox.Show("Game Over");
+            game.Start();
         }
 
         protected override void OnResize(EventArgs e)

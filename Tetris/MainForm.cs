@@ -15,6 +15,9 @@ namespace Tetris
         public MainForm()
         {
             InitializeComponent();
+
+            ScoreLabel.DataBindings.Add(new Binding("Text", View, "Score"));
+            
         }
     }
 }

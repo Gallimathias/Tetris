@@ -28,9 +28,9 @@ namespace Tetris.Core
             Y += y;
         }
 
-        public void Draw(Graphics graphics, int cellWidth, int cellHeight)
+        public void Draw(Graphics graphics, int cellWidth, int cellHeight, Color color)
         {
-            using (var brush = new SolidBrush(Color.Red))
+            using (var brush = new SolidBrush(color))
             {
                 graphics.FillRectangle(brush, 
                     new Rectangle(cellWidth * X, cellHeight * Y, cellWidth, cellHeight));
